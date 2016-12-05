@@ -112,18 +112,24 @@ BinarySearchTree.prototype._findMin = function() {
 
 // Write an algorithm to check whether an arbitrary tree is a binary search tree
 // assume node.middle != null only if node.left != null && node.right != null
-let binarySearchCheck = function(node) {
+
+let binarySearchCheck = (node) => {
     if (node.middle) {
         return false;
     } else {
         if (node.left) {
-            if (binarySearchCheck(node.left)) {
-                if (node.right) {
-                    return binarySearchCheck(node.right);
-                } else {
-                    return true;
+            if (node.left.key > node.key) {
+                return false;
+            }
+
+            if (!binarySearchCheck(node.left)) {
+                return false;
+            } 
+            
+            if (node.right) {
+                if (node.right.key < node.key) {
+                    return false;
                 }
-            } else if (node.right) {
                 return binarySearchCheck(node.right);
             }
         }
@@ -180,4 +186,61 @@ let thirdLargestValue = (node, values) => {
     }
 }
 
+
+//Basic string padding functions
+function lpad(str, wid) {
+    return (" ".repeat(wid) + str).slice(-wid);
+}
+
+function rpad(str, wid) {
+    return (str + " ".repeat(wid)).slice(0, wid);
+}
+
+function cpad(str, wid) {
+    var tmp = " ".repeat(wid) + str + " ".repeat(wid);
+    var start = Math.floor(tmp.length/2 - wid/2);
+    return tmp.slice(start, start + wid);
+}
+
+//Render a tree to an array of strings
+function render(tree) {
+    var key = "" + tree.key;
+    if (!tree.left && !tree.right) return [key];
+    var left = tree.left ? render(tree.left) : [];
+    var right = tree.right ? render(tree.right) : [];
+    var lwid = left.reduce((w,l) => Math.max(w, l.length), 0) + 1;
+    var rwid = right.reduce((w,l) => Math.max(w, l.length), 0) + 1;
+    var spare = tree.key.length - lwid - rwid; //See if we need more room
+    if (spare > 0) {
+        lwid += Math.ceil(spare / 2);
+        rwid += Math.ceil(spare / 2);
+    }
+    var ret = [cpad(tree.key, lwid + rwid + 1)];
+    for (var i = 0; i < left.length || i < right.length; ++i)
+        ret.push(lpad(left[i]||"", lwid) + " " + rpad(right[i]||"", rwid));
+    return ret;
+}
+
+//Display a tree on the console.
+function display(tree) {
+    for (var line of render(tree)) console.log(line + "|");
+}
+
+//Construct a tree
+function tree(val) {
+    return {key: val, left: null, right: null};
+}
+function add(node, val) {
+    while (1) {
+        var dir = val < node.key ? "left" : "right";
+        if (!node[dir]) return node[dir] = tree(val);
+        node = node[dir];
+    }
+}
+
+//Example usage
+var t = tree(8);
+for (var n of [3, 1, 6, 4, 7, 10, 14, 13]) add(t, n);
+
+display(t);
 
